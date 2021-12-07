@@ -1,0 +1,18 @@
+
+#PageProfile .PageProfile-icon {
+	font-size: 150px;
+}
+
+#PageProfile .PageProfile-white-box {
+	background-color: rgb(255,255,255);
+	border-radius: 10px;
+	margin: 10px;
+	padding: 20px;
+}
+
+#PageProfile .PageProfile-divider {
+	background-color: lightgrey;
+	width: calc(100% - 40px);
+	height: 2px;
+	margin: 30px 20px;
+}

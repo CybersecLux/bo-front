@@ -1,5 +1,6 @@
 import React from "react";
 import "./PageProfile.css";
+import vCard from "vcf";
 import { NotificationManager as nm } from "react-notifications";
 import Loading from "./box/Loading.jsx";
 import Info from "./box/Info.jsx";
@@ -16,6 +17,7 @@ export default class PageProfile extends React.Component {
 
 		this.state = {
 			user: null,
+			vcard: null,
 			password: null,
 			newPassword: null,
 			newPasswordConfirmation: null,
@@ -29,11 +31,14 @@ export default class PageProfile extends React.Component {
 	refreshProfile() {
 		this.setState({
 			user: null,
+			vcard: null,
 		});
 
 		getRequest.call(this, "private/get_my_user", (data) => {
 			this.setState({
 				user: data,
+				/* eslint-disable-next-line new-cap */
+				vcard: data.vcard ? new vCard().parse(data.vcard) : new vCard(),
 			});
 		}, (response) => {
 			nm.warning(response.statusText);
@@ -62,13 +67,109 @@ export default class PageProfile extends React.Component {
 		});
 	}
 
+	getVcardValue(key) {
+		if (this.state.vcard && this.state.vcard.get(key)) {
+			console.log("VCARD VALUE " + key + ":" + this.state.vcard.get(key));
+			console.log("VCARD:" + this.state.vcard.toString());
+			return this.state.vcard.get(key).value;
+		}
+
+		return null;
+	}
+
 	changeState(field, value) {
 		this.setState({ [field]: value });
 	}
 
 	render() {
 		return (
-			<div className={"page max-sized-page"}>
+			<div id={"PageProfile"} className={"page max-sized-page"}>
+				<div className={"row row-spaced"}>
+					<div className="col-md-4">
+						<div className={"row row-spaced"}>
+							<div className="col-md-12">
+								<div className="PageProfile-white-box">
+									<div className="PageProfile-icon centered">
+										<i className="fas fa-user-circle"/>
+									</div>
+									<FormLine
+										label={"First name"}
+										value={this.getVcardValue("NICKNAME")}
+										onChange={(v) => this.state.vcard.set("NICKNAME", v)}
+										fullWidth={true}
+									/>
+									<FormLine
+										label={"Name"}
+										value={this.getVcardValue("N")}
+										onChange={(v) => this.state.vcard.set("N", v)}
+										fullWidth={true}
+									/>
+									<FormLine
+										label={"Title"}
+										value={this.getVcardValue("TITLE")}
+										onChange={(v) => this.state.vcard.set("TITLE", v)}
+										fullWidth={true}
+									/>
+								</div>
+							</div>
+
+							<div className="col-md-12">
+								<div className="PageProfile-white-box">
+									<FormLine
+										label={"Plateform"}
+										value={this.getVcardValue("URL")}
+										onChange={(v) => this.state.vcard.set("URL", v)}
+										fullWidth={true}
+									/>
+									<FormLine
+										label={"URL"}
+										value={this.getVcardValue("N")}
+										onChange={(v) => this.state.vcard.set("N", v)}
+										fullWidth={true}
+									/>
+									<div>
+										<div className="right-buttons">
+											<button
+												className="blue-button"
+												onClick={this.resetPassword}
+											>
+												Change password
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div className="col-md-8">
+						<div className={"row row-spaced"}>
+							<div className="col-md-12 PageProfile-white-box">
+								<FormLine
+									label={"Email"}
+									value={this.state.user ? this.state.user.email : ""}
+									disabled={true}
+								/>
+								<FormLine
+									label={"Show my email address publicly"}
+									type={"checkbox"}
+									value={this.getVcardValue("EMAIL") !== null}
+									onChange={(v) => this.state.vcard.set("EMAIL", v ? this.state.user.email : null)}
+								/>
+								<div className="PageProfile-divider"/>
+								<FormLine
+									label={"Telephone"}
+									value={this.getVcardValue("EMAIL") !== null}
+									onChange={(v) => this.state.vcard.set("N", v)}
+								/>
+							</div>
+							<div className="col-md-12 PageProfile-white-box">
+								fffgs
+							</div>
+						</div>
+					</div>
+				</div>
+
 				<div className={"row row-spaced"}>
 					<div className="col-md-12">
 						<h1>My information</h1>
