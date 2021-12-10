@@ -1,10 +1,10 @@
 import React from "react";
 import "./UserCompany.css";
+import Popup from "reactjs-popup";
 import { NotificationManager as nm } from "react-notifications";
 import Loading from "../../box/Loading.jsx";
 import { getRequest, postRequest } from "../../../utils/request.jsx";
 import FormLine from "../../button/FormLine.jsx";
-/* import Table from "../../table/Table.jsx"; */
 import DialogConfirmation from "../../dialog/DialogConfirmation.jsx";
 
 export default class UserCompany extends React.Component {
@@ -12,6 +12,7 @@ export default class UserCompany extends React.Component {
 		super(props);
 
 		this.refresh = this.refresh.bind(this);
+		this.getAllCompanies = this.getAllCompanies.bind(this);
 		this.addUserCompany = this.addUserCompany.bind(this);
 		this.deleteUserCompany = this.deleteUserCompany.bind(this);
 
@@ -25,6 +26,7 @@ export default class UserCompany extends React.Component {
 
 	componentDidMount() {
 		this.refresh();
+		this.getAllCompanies();
 	}
 
 	refresh() {
@@ -47,7 +49,9 @@ export default class UserCompany extends React.Component {
 		}, (error) => {
 			nm.error(error.message);
 		});
+	}
 
+	getAllCompanies() {
 		getRequest.call(this, "company/get_companies", (data) => {
 			this.setState({
 				allCompanies: data,
@@ -59,7 +63,7 @@ export default class UserCompany extends React.Component {
 		});
 	}
 
-	addUserCompany() {
+	addUserCompany(close) {
 		const params = {
 			user: this.props.id,
 			company: this.state.selectedCompany,
@@ -68,6 +72,7 @@ export default class UserCompany extends React.Component {
 		postRequest.call(this, "user/add_user_company", params, () => {
 			this.refresh();
 			nm.info("The entity has been added to the user");
+			close();
 		}, (response) => {
 			this.refresh();
 			nm.warning(response.statusText);
@@ -132,68 +137,72 @@ export default class UserCompany extends React.Component {
 	}
 
 	render() {
-		/* const columns = [
-			{
-				Header: "Name",
-				accessor: "name",
-			},
-			{
-				Header: "Department",
-				accessor: (x) => x,
-				Cell: ({ cell: { value } }) => (
-					<FormLine
-						labelWidth={1}
-						label={null}
-						type={"select"}
-						options={this.state.userCompaniesEnums
-							? this.state.userCompaniesEnums.department
-								.map((c) => ({ label: c.name, value: c.name }))
-							: []
-						}
-						value={value.department}
-						onChange={(v) => this.updateUserCompany(value.id, v)}
-					/>
-				),
-			},
-			{
-				Header: " ",
-				accessor: (x) => x,
-				Cell: ({ cell: { value } }) => (
-					<DialogConfirmation
-						text={"Are you sure you want to delete this row?"}
-						trigger={
-							<button
-								className={"small-button red-background Table-right-button"}>
-								<i className="fas fa-trash-alt"/>
-							</button>
-						}
-						afterConfirmation={() => this.deleteUserCompany(value.id)}
-					/>
-				),
-				width: 50,
-			},
-		]; */
-
 		return (
 			<div className={"row"}>
 				<div className="col-md-12">
+					<div className={"top-right-buttons"}>
+						<Popup
+							className="Popup-small-size"
+							trigger={
+								<button
+									className={"blue-background"}>
+									<i className="fas fa-plus"/> Add an entity
+								</button>
+							}
+							modal
+							closeOnDocumentClick
+						>
+							{(close) => <div className="row row-spaced">
+								<div className="col-md-12">
+									<h2>Add an assignment to an entity</h2>
+
+									<div className={"top-right-buttons"}>
+										<button
+											className={"grey-background"}
+											data-hover="Close"
+											data-active=""
+											onClick={close}>
+											<span><i className="far fa-times-circle"/></span>
+										</button>
+									</div>
+								</div>
+								<div className="col-md-12">
+									{this.state.allCompanies !== null
+										? <div>
+											<FormLine
+												label={"Company"}
+												type={"select"}
+												value={this.state.selectedCompany}
+												options={this.state.allCompanies === null ? []
+													: [{ value: null, label: "-" }].concat(
+														this.state.allCompanies.map((c) => ({ label: c.name, value: c.id })),
+													)}
+												onChange={(v) => this.setState({ selectedCompany: v })}
+											/>
+											<div className="right-buttons">
+												<button
+													onClick={() => this.addUserCompany(close)}
+													disabled={this.state.selectedCompany === null}>
+													Add the assignment
+												</button>
+											</div>
+										</div>
+										: <Loading
+											height={150}
+										/>
+									}
+								</div>
+							</div>}
+						</Popup>
+					</div>
+
 					<h2>Assigned entities</h2>
 				</div>
-
-				{/* <div className="col-md-12">
-					{this.state.companies !== null
-						? <Table
-							columns={columns}
-							data={this.state.companies}
-						/>
-						: <Loading/>
-					}
-				</div> */}
 
 				<div className="col-md-12">
 					{this.state.userCompanies
 						? (this.state.userCompanies.map((c) => (
-							<div key={c.company_id}>
+							<div className={"row-spaced"} key={c.company_id}>
 								<h4>
 									{this.getCompanyFromId(c.company_id)
 										? this.getCompanyFromId(c.company_id).name
@@ -223,36 +232,11 @@ export default class UserCompany extends React.Component {
 									}
 									afterConfirmation={() => this.deleteUserCompany(c.company_id)}
 								/>
+
 							</div>
 						)))
-						: <Loading/>
-					}
-				</div>
-
-				<div className="col-md-12">
-					<h2>Add an assignment to an entity</h2>
-					{this.state.allCompanies !== null
-						? <div>
-							<FormLine
-								label={"Company"}
-								type={"select"}
-								value={this.state.selectedCompany}
-								options={this.state.allCompanies === null ? []
-									: [{ value: null, label: "-" }].concat(
-										this.state.allCompanies.map((c) => ({ label: c.name, value: c.id })),
-									)}
-								onChange={(v) => this.setState({ selectedCompany: v })}
-							/>
-							<div className="right-buttons">
-								<button
-									onClick={this.addUserCompany}
-									disabled={this.state.selectedCompany === null}>
-                                    Add the assignment
-								</button>
-							</div>
-						</div>
 						: <Loading
-							height={150}
+							height={200}
 						/>
 					}
 				</div>
