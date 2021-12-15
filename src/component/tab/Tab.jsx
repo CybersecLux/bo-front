@@ -56,6 +56,13 @@ export default class Tab extends React.Component {
 												<div dangerouslySetInnerHTML={{
 													__html: dompurify.sanitize(this.props.labels[i]),
 												}}/>
+												{this.props.notifications !== undefined
+													&& this.props.notifications[i] !== undefined
+													&& this.props.notifications[i] > 0
+													&& <div className={"Tab-notification"}>
+														{this.props.notifications[i]}
+													</div>
+												}
 											</div>
 										);
 									})}
