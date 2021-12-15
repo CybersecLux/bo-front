@@ -13,6 +13,7 @@ export default class TaskRequest extends React.Component {
 		super(props);
 
 		this.refresh = this.refresh.bind(this);
+		this.fetchRequests = this.fetchRequests.bind(this);
 
 		const today = new Date();
 
@@ -147,6 +148,7 @@ export default class TaskRequest extends React.Component {
 										<Request
 											key={"request-" + r.id}
 											info={r}
+											onClose={this.refresh}
 										/>
 									))}
 							</div>
@@ -168,6 +170,7 @@ export default class TaskRequest extends React.Component {
 										<Request
 											key={r.id}
 											info={r}
+											onClose={this.refresh}
 										/>
 									))}
 							</div>
@@ -189,6 +192,7 @@ export default class TaskRequest extends React.Component {
 										<Request
 											key={r.id}
 											info={r}
+											onClose={this.refresh}
 										/>
 									))}
 							</div>
@@ -208,6 +212,7 @@ export default class TaskRequest extends React.Component {
 										<Request
 											key={r.id}
 											info={r}
+											onClose={this.refresh}
 										/>
 									))}
 							</div>

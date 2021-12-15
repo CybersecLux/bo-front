@@ -45,12 +45,13 @@ export default class Request extends Component {
 	}
 
 	onClose() {
-		this.setState({ isDetailOpened: false });
+		if (this.props.onClose) {
+			this.props.onClose();
+		}
 	}
 
 	onOpen() {
 		this.setState({
-			isDetailOpened: true,
 			user: null,
 			settings: null,
 		});
@@ -108,17 +109,19 @@ export default class Request extends Component {
 
 			postRequest.call(this, "request/update_request", params, () => {
 				const request = { ...this.props.info };
-
 				request[prop] = value;
-				this.setState({ request });
-				nm.info("The property has been updated");
 
-				if (prop === "status"
-					&& value === "PROCESSED"
-					&& this.state.user !== null) {
-					const element = document.getElementById("Request-send-mail-button");
-					element.click();
-				}
+				this.setState({ request }, () => {
+					if (prop === "status") {
+						if (value === "PROCESSED"
+							&& this.state.user !== null) {
+							const element = document.getElementById("Request-send-mail-button");
+							element.click();
+						}
+					}
+
+					nm.info("The property has been updated");
+				});
 			}, (response) => {
 				nm.warning(response.statusText);
 			}, (error) => {
