@@ -29,6 +29,7 @@ export default class SettingGlobal extends React.Component {
 				"POSTAL_ADDRESS",
 				"SHOW_COMMUNICATION_PAGE",
 				"SHOW_NETWORK_PAGE",
+				"ALLOW_ENTITY_REQUEST_ON_SUBSCRIPTION",
 				"ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE",
 				"ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE_CONTENT",
 				"DEACTIVATE_REVIEW_ON_ECOSYSTEM_ARTICLE",
@@ -251,6 +252,16 @@ export default class SettingGlobal extends React.Component {
 					</div>
 
 					<div className="col-md-12 row-spaced">
+						<FormLine
+							type={"checkbox"}
+							label={"Allow entity request on subscription"}
+							value={getSettingValue(this.props.settings, "ALLOW_ENTITY_REQUEST_ON_SUBSCRIPTION") === "TRUE"}
+							onChange={(v) => (v
+								? this.addSetting("ALLOW_ENTITY_REQUEST_ON_SUBSCRIPTION", "TRUE")
+								: this.deleteSetting("ALLOW_ENTITY_REQUEST_ON_SUBSCRIPTION")
+							)}
+						/>
+						<br/>
 						<FormLine
 							type={"checkbox"}
 							label={"Allow article edition"}
