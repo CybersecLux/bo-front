@@ -105,17 +105,6 @@ export default class UserGlobal extends React.Component {
 							value={this.state.user.accept_communication}
 							disabled={true}
 						/>
-						<br/>
-						<FormLine
-							label="Provided company on subscription"
-							value={this.state.user.company_on_subscription}
-							disabled={true}
-						/>
-						<FormLine
-							label="Provided department on subscription"
-							value={this.state.user.department_on_subscription}
-							disabled={true}
-						/>
 					</div>
 					: <Loading/>
 				}
