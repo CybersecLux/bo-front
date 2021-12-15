@@ -2,24 +2,18 @@ export function getApiURL() {
 	if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "") {
 		return "http://localhost:5000/";
 	}
-	if (window.location.hostname.includes("test")) {
-		return "https://api.test-db.cy.lu/";
-	}
-	return "https://api.db.cy.lu/";
+	return "https://api." + window.location.hostname.replace("www.", "").split(".").slice(1).join(".");
 }
 
 export function getCookieOptions() {
-	// TODO use httponly cookies
 	if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "") {
-		// return { httpOnly: true };
-		return { domain: "localhost" };
+		return { domain: "localhost", path: "/" };
 	}
-	if (window.location.hostname.includes("test")) {
-		// return { secure: true, domain: ".cy.lu" httpOnly: true };
-		return { secure: true, domain: ".cy.lu" };
-	}
-	// return { secure: true, domain: ".cy.lu", httpOnly: true };
-	return { secure: true, domain: ".cy.lu" };
+	return {
+		secure: true,
+		domain: "." + window.location.hostname.replace("www.", "").split(".").slice(1).join("."),
+		path: "/",
+	};
 }
 
 export function isInternetExplorer() {
