@@ -11,7 +11,7 @@
     width: calc(100% - 20px);
     min-width: 300px;
     max-width: 500px;
-    margin: calc(15vh + 100px) 0px 25vh 0px;
+    margin: calc(15vh + 50px) 0px 25vh 0px;
     background:
         linear-gradient(to right, black 1px, transparent 4px) 0 0,
         linear-gradient(to left, black 1px, transparent 4px) 100% 100%,
