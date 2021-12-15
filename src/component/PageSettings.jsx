@@ -53,6 +53,8 @@ export default class PageSettings extends React.Component {
 					content={[
 						<SettingGlobal
 							key={"global"}
+							settings={this.props.settings}
+							refreshSettings={this.props.refreshSettings}
 						/>,
 						<SettingLogo
 							key={"logo"}

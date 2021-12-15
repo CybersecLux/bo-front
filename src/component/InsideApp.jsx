@@ -23,6 +23,7 @@ export default class InsideApp extends React.Component {
 		super(props);
 
 		this.changeState = this.changeState.bind(this);
+		this.refreshSettings = this.refreshSettings.bind(this);
 
 		this.state = {
 			selectedMenu: window.location.pathname.replace(/\//, ""),
@@ -35,24 +36,22 @@ export default class InsideApp extends React.Component {
 	}
 
 	componentDidMount() {
-		this.getSettings();
+		this.refreshSettings();
 	}
 
-	getSettings() {
-		this.setState({
-			settings: null,
-		}, () => {
-			getRequest.call(this, "public/get_public_settings", (data) => {
-				this.setState({
-					settings: data,
-				});
-			}, (response) => {
-				this.setState({ loading: false });
-				nm.warning(response.statusText);
-			}, (error) => {
-				this.setState({ loading: false });
-				nm.error(error.message);
+	refreshSettings(afterRefresh) {
+		getRequest.call(this, "public/get_public_settings", (data) => {
+			this.setState({
+				settings: data,
+			}, () => {
+				if (afterRefresh) {
+					afterRefresh();
+				}
 			});
+		}, (response) => {
+			nm.warning(response.statusText);
+		}, (error) => {
+			nm.error(error.message);
 		});
 	}
 
@@ -79,9 +78,17 @@ export default class InsideApp extends React.Component {
 						<Route path="/taxonomy" render={(props) => <PageTaxonomy {...props} />}/>
 						<Route path="/users" render={(props) => <PageUser {...props} />}/>
 						<Route path="/media" render={(props) => <PageMedia {...props} />}/>
-						<Route path="/settings" render={(props) => <PageSettings {...props} />}/>
+						<Route path="/settings" render={(props) => <PageSettings
+							{...props}
+							settings={this.state.settings}
+							refreshSettings={this.refreshSettings}
+						/>}/>
 						<Route path="/profile" render={(props) => <PageProfile {...props} />}/>
-						<Route path="/task" render={(props) => <PageTask {...props} />}/>
+						<Route path="/task" render={(props) => <PageTask
+							{...props}
+							settings={this.state.settings}
+							refreshSettings={this.refreshSettings}
+						/>}/>
 
 						{getSettingValue(this.state.settings, "SHOW_NETWORK_PAGE") === "TRUE"
 							&& <Route path="/network" render={(props) => <PageNetwork {...props} />}/>

@@ -3,7 +3,7 @@ import "./SettingGlobal.css";
 import { NotificationManager as nm } from "react-notifications";
 import { Link } from "react-router-dom";
 import Info from "../box/Info.jsx";
-import { getRequest, postRequest } from "../../utils/request.jsx";
+import { postRequest } from "../../utils/request.jsx";
 import { getSettingValue } from "../../utils/setting.jsx";
 import FormLine from "../button/FormLine.jsx";
 import DialogConfirmation from "../dialog/DialogConfirmation.jsx";
@@ -14,8 +14,6 @@ export default class SettingGlobal extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.refresh = this.refresh.bind(this);
-		this.getSettings = this.getSettings.bind(this);
 		this.addSetting = this.addSetting.bind(this);
 		this.deleteSetting = this.deleteSetting.bind(this);
 		this.updateSetting = this.updateSetting.bind(this);
@@ -57,23 +55,7 @@ export default class SettingGlobal extends React.Component {
 	}
 
 	componentDidMount() {
-		this.refresh();
-	}
-
-	refresh() {
-		this.getSettings();
-	}
-
-	getSettings() {
-		getRequest.call(this, "public/get_public_settings", (data) => {
-			this.setState({
-				settings: data,
-			});
-		}, (response) => {
-			nm.warning(response.statusText);
-		}, (error) => {
-			nm.error(error.message);
-		});
+		this.props.refreshSettings();
 	}
 
 	addSetting(property, value) {
@@ -83,11 +65,13 @@ export default class SettingGlobal extends React.Component {
 		};
 
 		postRequest.call(this, "setting/add_setting", params, () => {
-			this.refresh();
+			this.props.refreshSettings();
 			nm.info("The setting has been added");
 		}, (response) => {
+			this.props.refreshSettings();
 			nm.warning(response.statusText);
 		}, (error) => {
+			this.props.refreshSettings();
 			nm.error(error.message);
 		});
 	}
@@ -98,20 +82,19 @@ export default class SettingGlobal extends React.Component {
 		};
 
 		postRequest.call(this, "setting/delete_setting", params, () => {
-			document.elementFromPoint(100, 0).click();
-			this.refresh();
+			this.props.refreshSettings();
 			nm.info("The setting has been deleted");
 		}, (response) => {
-			this.refresh();
+			this.props.refreshSettings();
 			nm.warning(response.statusText);
 		}, (error) => {
-			this.refresh();
+			this.props.refreshSettings();
 			nm.error(error.message);
 		});
 	}
 
 	updateSetting(property, value) {
-		if (getSettingValue(this.state.settings, property)) {
+		if (getSettingValue(this.props.settings, property)) {
 			const params = {
 				property,
 			};
@@ -123,10 +106,10 @@ export default class SettingGlobal extends React.Component {
 					nm.info("The setting has been updated");
 				}
 			}, (response) => {
-				this.refresh();
+				this.props.refreshSettings();
 				nm.warning(response.statusText);
 			}, (error) => {
-				this.refresh();
+				this.props.refreshSettings();
 				nm.error(error.message);
 			});
 		} else {
@@ -174,7 +157,9 @@ export default class SettingGlobal extends React.Component {
 						<h1>Global</h1>
 						<div className="top-right-buttons">
 							<button
-								onClick={() => this.refresh()}>
+								onClick={() => this.props.refreshSettings(
+									() => nm.info("The settings has been refreshed"),
+								)}>
 								<i className="fas fa-redo-alt"/>
 							</button>
 						</div>
@@ -189,17 +174,17 @@ export default class SettingGlobal extends React.Component {
 					<div className="col-md-12 row-spaced">
 						<FormLine
 							label={"Project name"}
-							value={getSettingValue(this.state.settings, "PROJECT_NAME")}
+							value={getSettingValue(this.props.settings, "PROJECT_NAME")}
 							onBlur={(v) => this.updateSetting("PROJECT_NAME", v)}
 						/>
 						<FormLine
 							label={"Admin platform name"}
-							value={getSettingValue(this.state.settings, "ADMIN_PLATFORM_NAME")}
+							value={getSettingValue(this.props.settings, "ADMIN_PLATFORM_NAME")}
 							onBlur={(v) => this.updateSetting("ADMIN_PLATFORM_NAME", v)}
 						/>
 						<FormLine
 							label={"Private space platform name"}
-							value={getSettingValue(this.state.settings, "PRIVATE_SPACE_PLATFORM_NAME")}
+							value={getSettingValue(this.props.settings, "PRIVATE_SPACE_PLATFORM_NAME")}
 							onBlur={(v) => this.updateSetting("PRIVATE_SPACE_PLATFORM_NAME", v)}
 						/>
 					</div>
@@ -211,17 +196,17 @@ export default class SettingGlobal extends React.Component {
 					<div className="col-md-12 row-spaced">
 						<FormLine
 							label={"Email address"}
-							value={getSettingValue(this.state.settings, "EMAIL_ADDRESS")}
+							value={getSettingValue(this.props.settings, "EMAIL_ADDRESS")}
 							onBlur={(v) => this.updateSetting("EMAIL_ADDRESS", v)}
 						/>
 						<FormLine
 							label={"Phone number"}
-							value={getSettingValue(this.state.settings, "PHONE_NUMBER")}
+							value={getSettingValue(this.props.settings, "PHONE_NUMBER")}
 							onBlur={(v) => this.updateSetting("PHONE_NUMBER", v)}
 						/>
 						<FormLine
 							label={"Postal address"}
-							value={getSettingValue(this.state.settings, "POSTAL_ADDRESS")}
+							value={getSettingValue(this.props.settings, "POSTAL_ADDRESS")}
 							onBlur={(v) => this.updateSetting("POSTAL_ADDRESS", v)}
 						/>
 					</div>
@@ -229,8 +214,8 @@ export default class SettingGlobal extends React.Component {
 					<div className="col-md-12">
 						<h2>
 							Administration platform
-							{getSettingValue(this.state.settings, "ADMIN_PLATFORM_NAME")
-								? " - " + getSettingValue(this.state.settings, "ADMIN_PLATFORM_NAME")
+							{getSettingValue(this.props.settings, "ADMIN_PLATFORM_NAME")
+								? " - " + getSettingValue(this.props.settings, "ADMIN_PLATFORM_NAME")
 								: ""}
 						</h2>
 					</div>
@@ -239,7 +224,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Show communication page"}
-							value={getSettingValue(this.state.settings, "SHOW_COMMUNICATION_PAGE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "SHOW_COMMUNICATION_PAGE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("SHOW_COMMUNICATION_PAGE", "TRUE")
 								: this.deleteSetting("SHOW_COMMUNICATION_PAGE")
@@ -248,7 +233,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Show network page"}
-							value={getSettingValue(this.state.settings, "SHOW_NETWORK_PAGE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "SHOW_NETWORK_PAGE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("SHOW_NETWORK_PAGE", "TRUE")
 								: this.deleteSetting("SHOW_NETWORK_PAGE")
@@ -259,8 +244,8 @@ export default class SettingGlobal extends React.Component {
 					<div className="col-md-12">
 						<h2>
 							Private space platform
-							{getSettingValue(this.state.settings, "PRIVATE_SPACE_PLATFORM_NAME")
-								? " - " + getSettingValue(this.state.settings, "PRIVATE_SPACE_PLATFORM_NAME")
+							{getSettingValue(this.props.settings, "PRIVATE_SPACE_PLATFORM_NAME")
+								? " - " + getSettingValue(this.props.settings, "PRIVATE_SPACE_PLATFORM_NAME")
 								: ""}
 						</h2>
 					</div>
@@ -269,7 +254,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Allow article edition"}
-							value={getSettingValue(this.state.settings, "ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE", "TRUE")
 								: this.deleteSetting("ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE")
@@ -278,7 +263,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Allow article content edition"}
-							value={getSettingValue(this.state.settings, "ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE_CONTENT") === "TRUE"}
+							value={getSettingValue(this.props.settings, "ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE_CONTENT") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE_CONTENT", "TRUE")
 								: this.deleteSetting("ALLOW_ECOSYSTEM_TO_EDIT_ARTICLE_CONTENT")
@@ -287,7 +272,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Deactivate review on ecosystem articles"}
-							value={getSettingValue(this.state.settings, "DEACTIVATE_REVIEW_ON_ECOSYSTEM_ARTICLE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "DEACTIVATE_REVIEW_ON_ECOSYSTEM_ARTICLE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("DEACTIVATE_REVIEW_ON_ECOSYSTEM_ARTICLE", "TRUE")
 								: this.deleteSetting("DEACTIVATE_REVIEW_ON_ECOSYSTEM_ARTICLE")
@@ -295,14 +280,14 @@ export default class SettingGlobal extends React.Component {
 						/>
 						<FormLine
 							label={"Authorized article types"}
-							value={getSettingValue(this.state.settings, "AUTHORIZED_ARTICLE_TYPES_FOR_ECOSYSTEM")}
+							value={getSettingValue(this.props.settings, "AUTHORIZED_ARTICLE_TYPES_FOR_ECOSYSTEM")}
 							onBlur={(v) => this.updateSetting("AUTHORIZED_ARTICLE_TYPES_FOR_ECOSYSTEM", v)}
 						/>
 						<br/>
 						<FormLine
 							type={"checkbox"}
 							label={"Show logo generator page"}
-							value={getSettingValue(this.state.settings, "ALLOW_ECOSYSTEM_TO_EDIT_LOGO") === "TRUE"}
+							value={getSettingValue(this.props.settings, "ALLOW_ECOSYSTEM_TO_EDIT_LOGO") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("ALLOW_ECOSYSTEM_TO_EDIT_LOGO", "TRUE")
 								: this.deleteSetting("ALLOW_ECOSYSTEM_TO_EDIT_LOGO")
@@ -327,7 +312,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight entities without image"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ENTITIES_WITHOUT_IMAGE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ENTITIES_WITHOUT_IMAGE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ENTITIES_WITHOUT_IMAGE", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ENTITIES_WITHOUT_IMAGE")
@@ -336,7 +321,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight entities without website"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ENTITIES_WITHOUT_WEBSITE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ENTITIES_WITHOUT_WEBSITE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ENTITIES_WITHOUT_WEBSITE", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ENTITIES_WITHOUT_WEBSITE")
@@ -345,7 +330,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight entities without postal address"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ENTITIES_WITHOUT_POSTAL_ADDRESS") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ENTITIES_WITHOUT_POSTAL_ADDRESS") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ENTITIES_WITHOUT_POSTAL_ADDRESS", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ENTITIES_WITHOUT_POSTAL_ADDRESS")
@@ -354,7 +339,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight entities with postal address missing geolocation"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ENTITIES_WITH_POSTAL_ADDRESS_MISSING_GEOLOCATION") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ENTITIES_WITH_POSTAL_ADDRESS_MISSING_GEOLOCATION") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ENTITIES_WITH_POSTAL_ADDRESS_MISSING_GEOLOCATION", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ENTITIES_WITH_POSTAL_ADDRESS_MISSING_GEOLOCATION")
@@ -363,7 +348,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight entities without phone number"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ENTITIES_WITHOUT_PHONE_NUMBER") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ENTITIES_WITHOUT_PHONE_NUMBER") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ENTITIES_WITHOUT_PHONE_NUMBER", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ENTITIES_WITHOUT_PHONE_NUMBER")
@@ -372,7 +357,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight entities without email address"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ENTITIES_WITHOUT_EMAIL_ADDRESS") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ENTITIES_WITHOUT_EMAIL_ADDRESS") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ENTITIES_WITHOUT_EMAIL_ADDRESS", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ENTITIES_WITHOUT_EMAIL_ADDRESS")
@@ -381,7 +366,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight entities without creation date"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ENTITIES_WITHOUT_CREATION_DATE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ENTITIES_WITHOUT_CREATION_DATE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ENTITIES_WITHOUT_CREATION_DATE", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ENTITIES_WITHOUT_CREATION_DATE")
@@ -392,7 +377,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight articles without title"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ARTICLE_WITHOUT_TITLE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ARTICLE_WITHOUT_TITLE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ARTICLE_WITHOUT_TITLE", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ARTICLE_WITHOUT_TITLE")
@@ -401,7 +386,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight articles without handle"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ARTICLE_WITHOUT_HANDLE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ARTICLE_WITHOUT_HANDLE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ARTICLE_WITHOUT_HANDLE", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ARTICLE_WITHOUT_HANDLE")
@@ -410,7 +395,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight articles without publication date"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ARTICLE_WITHOUT_PUBLICATION_DATE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ARTICLE_WITHOUT_PUBLICATION_DATE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ARTICLE_WITHOUT_PUBLICATION_DATE", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ARTICLE_WITHOUT_PUBLICATION_DATE")
@@ -419,7 +404,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight articles without content"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ARTICLE_WITHOUT_CONTENT") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ARTICLE_WITHOUT_CONTENT") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ARTICLE_WITHOUT_CONTENT", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ARTICLE_WITHOUT_CONTENT")
@@ -428,7 +413,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight events without start date"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ARTICLE_WITHOUT_START_DATE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ARTICLE_WITHOUT_START_DATE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ARTICLE_WITHOUT_START_DATE", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ARTICLE_WITHOUT_START_DATE")
@@ -437,7 +422,7 @@ export default class SettingGlobal extends React.Component {
 						<FormLine
 							type={"checkbox"}
 							label={"Highlight events without end date"}
-							value={getSettingValue(this.state.settings, "HIGHLIGHT_ARTICLE_WITHOUT_END_DATE") === "TRUE"}
+							value={getSettingValue(this.props.settings, "HIGHLIGHT_ARTICLE_WITHOUT_END_DATE") === "TRUE"}
 							onChange={(v) => (v
 								? this.addSetting("HIGHLIGHT_ARTICLE_WITHOUT_END_DATE", "TRUE")
 								: this.deleteSetting("HIGHLIGHT_ARTICLE_WITHOUT_END_DATE")
@@ -485,17 +470,17 @@ export default class SettingGlobal extends React.Component {
 					</div>
 
 					<div className="col-md-12 row-spaced">
-						{this.state.settings
+						{this.props.settings
 							&& <Table
 								columns={columns}
 								data={
-									this.state.settings
+									this.props.settings
 										.filter((v) => this.state.defaultProperties.indexOf(v.property) < 0)
 								}
 							/>
 						}
 
-						{!this.state.settings
+						{!this.props.settings
 							&& <Loading
 								height={300}
 							/>
