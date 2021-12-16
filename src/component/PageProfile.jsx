@@ -76,20 +76,36 @@ export default class PageProfile extends React.Component {
 	}
 
 	getVcardValue(key) {
-		if (this.state.vcard && this.state.vcard.get(key)) {
-			console.log("VCARD VALUE " + key + ":" + this.state.vcard.get(key));
-			console.log("VCARD:" + this.state.vcard.toString());
-			return this.state.vcard.get(key).value;
+		if (this.state.currentVcard && this.state.currentVcard.get(key)) {
+			if (key === "socialprofile" && !Array.isArray(this.state.currentVcard.get(key))) {
+				console.log("PPPP", [this.state.currentVcard.get(key)],
+					this.state.currentVcard.get(key).valueOf(), this.state.currentVcard.get(key).type);
+				return [this.state.currentVcard.get(key)];
+			}
+			return this.state.currentVcard.get(key);
 		}
 
 		return null;
 	}
 
-	updateCurrentVcard(key, value) {
+	updateCurrentVcard(key, value, params) {
 		if (this.state.currentVcard) {
-			console.log("AA", this.state.currentVcard, key, value);
-			this.state.vcard.set(value);
+			this.state.currentVcard.set(key, value && value.length > 0 ? value : null, params);
+			console.log("AA", this.state.currentVcard.toString());
+			this.forceUpdate();
 		}
+	}
+
+	updateCurrentVcardSocialeProfile(value, type) {
+		this.state.currentVcard.set("socialprofile", value && value.length > 0 ? value : null, { type });
+		console.log("MM", this.state.currentVcard.toString());
+		this.forceUpdate();
+	}
+
+	addCurrentVcardSocialeProfile() {
+		this.state.currentVcard.add("socialprofile", "", { type: "Personal website" });
+		console.log("PP", this.state.currentVcard.toString());
+		this.forceUpdate();
 	}
 
 	updateUser(property, value) {
@@ -158,7 +174,7 @@ export default class PageProfile extends React.Component {
 											>
 												{(close) => <div className="row">
 													<div className="col-md-12">
-														<h2>Reset password</h2>
+														<h2>Profile QR code</h2>
 
 														<div className={"top-right-buttons"}>
 															<button
@@ -188,14 +204,14 @@ export default class PageProfile extends React.Component {
 									</div>
 									<FormLine
 										label={"Full name"}
-										value={this.getVcardValue("FN")}
-										onChange={(v) => this.state.currentVcard.set("FN", v)}
+										value={this.getVcardValue("fn")}
+										onChange={(v) => this.updateCurrentVcard("fn", v)}
 										fullWidth={true}
 									/>
 									<FormLine
 										label={"Title"}
-										value={this.getVcardValue("TITLE")}
-										onChange={(v) => this.state.currentVcard.set("TITLE", v)}
+										value={this.getVcardValue("title")}
+										onChange={(v) => this.updateCurrentVcard("title", v)}
 										fullWidth={true}
 									/>
 								</div>
@@ -342,36 +358,46 @@ export default class PageProfile extends React.Component {
 									label={"Include email in my profile"}
 									type={"checkbox"}
 									value={this.getVcardValue("email")}
+									onChange={(v) => this.updateCurrentVcard("email", v ? this.state.user.email : null)}
 								/>
 								<FormLine
 									label={"Telephone"}
-									value={this.getVcardValue("phone")}
-									onChange={(v) => this.state.currentVcard.set("N", v)}
+									value={this.getVcardValue("tel")}
+									onChange={(v) => this.updateCurrentVcard("tel", v)}
 								/>
 							</div>
 							<div className="col-md-12 PageProfile-white-box">
 								<h3>Social media and website</h3>
 								<br/>
 
-								{this.getVcardValue("socialMedia")
-									? this.getVcardValue("socialMedia").map((s) => (
+								{this.getVcardValue("socialprofile")
+									? [].concat(this.getVcardValue("socialprofile")).map((s, i) => (
 										<div
 											className="row row-spaced"
-											key={s}>
+											key={i}>
 											<div className="col-md-6">
 												<FormLine
 													label={"Plateform"}
-													value={this.getVcardValue("URL")}
-													onChange={(v) => this.state.currentVcard.set("URL", v)}
+													type={"select"}
+													options={[
+														{ label: "Personal website", value: "Personal website" },
+														{ label: "LinkedIn", value: "LinkedIn" },
+														{ label: "Twitter", value: "Twitter" },
+														{ label: "Instragram", value: "Instragram" },
+														{ label: "Medium", value: "Medium" },
+														{ label: "GitHub", value: "GitHub" },
+														{ label: "Other", value: "Other" },
+													]}
+													value={s.type}
+													onChange={(v) => this.updateCurrentVcardSocialeProfile(s.valueOf(), v)}
 													fullWidth={true}
 												/>
-												{s}
 											</div>
 											<div className="col-md-6">
 												<FormLine
 													label={"Link"}
-													value={this.getVcardValue("N")}
-													onChange={(v) => this.state.currentVcard.set("N", v)}
+													value={s.valueOf() ? s.valueOf() : ""}
+													onChange={(v) => this.updateCurrentVcardSocialeProfile(v, s.type)}
 													fullWidth={true}
 												/>
 											</div>
@@ -396,7 +422,7 @@ export default class PageProfile extends React.Component {
 
 								<div className="right-buttons">
 									<button
-										onClick={() => this.changePassword()}>
+										onClick={() => this.addCurrentVcardSocialeProfile()}>
 										<i className="fas fa-plus"/> Add
 									</button>
 								</div>
@@ -405,20 +431,21 @@ export default class PageProfile extends React.Component {
 					</div>
 				</div>
 
-				{this.state.dbVcard && this.state.currentVcard
-					&& this.state.dbVcard.toString("4.0") !== this.state.currentVcard.toString("4.0")
+				{((this.state.dbVcard && !this.state.currentVcard)
+					|| (!this.state.dbVcard && this.state.currentVcard)
+					|| this.state.dbVcard.toString("4.0") !== this.state.currentVcard.toString("4.0"))
 					&& <div className="PageProfile-save-button">
 						<div className="row">
 							<div className="col-md-6">
 								<button
 									className={"red-background"}
-									onClick={() => this.changePassword()}>
+									onClick={this.refreshProfile}>
 									<i className="far fa-times-circle"/> Discard changes
 								</button>
 							</div>
 							<div className="col-md-6">
 								<button
-									onClick={() => this.changePassword()}>
+									onClick={() => this.updateUser("vcard", this.state.currentVcard.toString("4.0"))}>
 									<i className="fas fa-save"/> Save profile
 								</button>
 							</div>
