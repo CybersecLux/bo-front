@@ -1,5 +1,9 @@
 
 #PageProfile .PageProfile-icon {
+	position: relative;
+}
+
+#PageProfile .PageProfile-icon i {
 	font-size: 150px;
 }
 
@@ -49,4 +53,18 @@
   100% {
     bottom: 20px;
   }
+}
+
+#PageProfile .PageProgile-qr-button {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+}
+
+#PageProfile .PageProgile-qr-button i {
+	font-size: initial !important;
+}
+
+#PageProfile .PageProfile-qr-code {
+	max-width: 100%;
 }

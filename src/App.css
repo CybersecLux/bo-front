@@ -320,7 +320,7 @@ textarea {
 }
 
 .Popup-small-size-content {
-	width: 70% !important;
+	width: 90% !important;
 	max-height: 90% !important;
 	max-width: 900px;
 	padding: 10px;
@@ -337,6 +337,10 @@ textarea {
 	overflow-x: hidden;
 	background-color: #EEE !important;
 	text-align: initial;
+}
+
+.popup-content i {
+	font-size: initial !important;
 }
 
 /* ANIMATION */

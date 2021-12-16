@@ -1,6 +1,7 @@
 import React from "react";
 import "./PageProfile.css";
 import vCard from "vcf";
+import QRCode from "react-qr-code";
 import Popup from "reactjs-popup";
 import { NotificationManager as nm } from "react-notifications";
 import Info from "./box/Info.jsx";
@@ -143,6 +144,47 @@ export default class PageProfile extends React.Component {
 								<div className="PageProfile-white-box">
 									<div className="PageProfile-icon centered">
 										<i className="fas fa-user-circle"/>
+
+										{this.state.user.handle
+											&& <Popup
+												className="Popup-small-size"
+												trigger={
+													<button className="PageProgile-qr-button blue-button">
+														<i className="fas fa-qrcode"/>
+													</button>
+												}
+												modal
+												closeOnDocumentClick
+											>
+												{(close) => <div className="row">
+													<div className="col-md-12">
+														<h2>Reset password</h2>
+
+														<div className={"top-right-buttons"}>
+															<button
+																className={"grey-background"}
+																data-hover="Close"
+																data-active=""
+																onClick={close}>
+																<span><i className="far fa-times-circle"/></span>
+															</button>
+														</div>
+													</div>
+													<div className="col-md-12 centered">
+														<QRCode
+															className="PageProfile-qr-code"
+															value={
+																getApiURL()
+																+ "public/get_public_profile/"
+																+ this.state.user.handle
+															}
+															bgColor={"#EEEEEE"}
+															level={"M"}
+														/>
+													</div>
+												</div>}
+											</Popup>
+										}
 									</div>
 									<FormLine
 										label={"Full name"}
