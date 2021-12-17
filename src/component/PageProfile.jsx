@@ -78,8 +78,6 @@ export default class PageProfile extends React.Component {
 	getVcardValue(key) {
 		if (this.state.currentVcard && this.state.currentVcard.get(key)) {
 			if (key === "socialprofile" && !Array.isArray(this.state.currentVcard.get(key))) {
-				console.log("PPPP", [this.state.currentVcard.get(key)],
-					this.state.currentVcard.get(key).valueOf(), this.state.currentVcard.get(key).type);
 				return [this.state.currentVcard.get(key)];
 			}
 			return this.state.currentVcard.get(key);
@@ -91,20 +89,72 @@ export default class PageProfile extends React.Component {
 	updateCurrentVcard(key, value, params) {
 		if (this.state.currentVcard) {
 			this.state.currentVcard.set(key, value && value.length > 0 ? value : null, params);
-			console.log("AA", this.state.currentVcard.toString());
 			this.forceUpdate();
 		}
 	}
 
-	updateCurrentVcardSocialeProfile(value, type) {
-		this.state.currentVcard.set("socialprofile", value && value.length > 0 ? value : null, { type });
-		console.log("MM", this.state.currentVcard.toString());
+	updateSocialeProfilePlatform(pos, value) {
+		let properties = this.state.currentVcard.get("socialprofile");
+		let loop = 0;
+
+		if (!Array.isArray(this.state.currentVcard.get("socialprofile"))) {
+			properties = [properties];
+		}
+
+		properties.forEach((p, i) => {
+			if (loop === 0) {
+				this.state.currentVcard.set("socialprofile", p.valueOf(), { type: pos === i ? value : p.type });
+				loop++;
+			} else {
+				this.state.currentVcard.add("socialprofile", p.valueOf(), { type: pos === i ? value : p.type });
+			}
+		});
+
+		this.forceUpdate();
+	}
+
+	updateSocialeProfileLink(pos, value) {
+		let properties = this.state.currentVcard.get("socialprofile");
+		let loop = 0;
+
+		if (!Array.isArray(this.state.currentVcard.get("socialprofile"))) {
+			properties = [properties];
+		}
+
+		properties.forEach((p, i) => {
+			if (loop === 0) {
+				this.state.currentVcard.set("socialprofile", pos === i ? value : p.valueOf(), { type: p.type });
+				loop++;
+			} else {
+				this.state.currentVcard.add("socialprofile", pos === i ? value : p.valueOf(), { type: p.type });
+			}
+		});
+
 		this.forceUpdate();
 	}
 
 	addCurrentVcardSocialeProfile() {
 		this.state.currentVcard.add("socialprofile", "", { type: "Personal website" });
-		console.log("PP", this.state.currentVcard.toString());
+		this.forceUpdate();
+	}
+
+	deleteSocialeProfile(pos) {
+		let properties = this.state.currentVcard.get("socialprofile");
+		let loop = 0;
+
+		if (!Array.isArray(this.state.currentVcard.get("socialprofile"))) {
+			properties = [properties];
+		}
+
+		properties.filter((p, i) => i !== pos).forEach((p) => {
+			if (loop === 0) {
+				this.state.currentVcard.set("socialprofile", p.valueOf(), { type: p.type });
+				loop++;
+			} else {
+				this.state.currentVcard.add("socialprofile", p.valueOf(), { type: p.type });
+			}
+		});
+
 		this.forceUpdate();
 	}
 
@@ -191,7 +241,7 @@ export default class PageProfile extends React.Component {
 															className="PageProfile-qr-code"
 															value={
 																getApiURL()
-																+ "public/get_public_profile/"
+																+ "public/get_public_vcard/"
 																+ this.state.user.handle
 															}
 															bgColor={"#EEEEEE"}
@@ -297,17 +347,6 @@ export default class PageProfile extends React.Component {
 
 									<button
 										className="blue-button"
-										onClick={this.resetPassword}
-										disabled={!this.state.user.is_vcard_public || !this.state.user.handle}
-										title={(!this.state.user.is_vcard_public || !this.state.user.handle)
-											&& "The profile must be public with an handle"
-										}
-									>
-										Open profile page
-									</button>
-
-									<button
-										className="blue-button"
 										onClick={() => window.open(
 											getApiURL() + "public/get_public_vcard/" + this.state.user.handle,
 											"_blank",
@@ -386,10 +425,12 @@ export default class PageProfile extends React.Component {
 														{ label: "Instragram", value: "Instragram" },
 														{ label: "Medium", value: "Medium" },
 														{ label: "GitHub", value: "GitHub" },
+														{ label: "BitBucket", value: "BitBucket" },
 														{ label: "Other", value: "Other" },
 													]}
 													value={s.type}
-													onChange={(v) => this.updateCurrentVcardSocialeProfile(s.valueOf(), v)}
+													onChange={(v) => this.updateSocialeProfilePlatform(i, v)}
+													disabled={true}
 													fullWidth={true}
 												/>
 											</div>
@@ -397,7 +438,7 @@ export default class PageProfile extends React.Component {
 												<FormLine
 													label={"Link"}
 													value={s.valueOf() ? s.valueOf() : ""}
-													onChange={(v) => this.updateCurrentVcardSocialeProfile(v, s.type)}
+													onChange={(v) => this.updateSocialeProfileLink(i, v)}
 													fullWidth={true}
 												/>
 											</div>
@@ -405,9 +446,7 @@ export default class PageProfile extends React.Component {
 												<div className="right-buttons">
 													<button
 														className={"red-background"}
-														value={this.state.value}
-														onClick={() => this.onChange(null)}
-														disabled={this.state.value === null}>
+														onClick={() => this.deleteSocialeProfile(i)}>
 														<i className="fas fa-trash-alt"/>
 													</button>
 												</div>
