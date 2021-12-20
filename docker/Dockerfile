@@ -14,4 +14,6 @@ COPY /docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 RUN rm -rf /app/*
 
+EXPOSE 3000
+
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
