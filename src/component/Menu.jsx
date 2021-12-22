@@ -46,7 +46,8 @@ export default class Menu extends React.Component {
 	getTaskNotificationBlock() {
 		if (this.state.notifications === null
 			|| this.state.notifications.new_requests === undefined
-			|| this.state.notifications.data_control === undefined) {
+			|| this.state.notifications.data_control === undefined
+			|| this.state.notifications.new_requests + this.state.notifications.data_control === 0) {
 			return "";
 		}
 
