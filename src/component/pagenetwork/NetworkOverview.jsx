@@ -255,7 +255,7 @@ export default class NetworkOverview extends React.Component {
 					</div>
 				</div>
 
-				<div className={"row"}>
+				<div className={"row row-spaced"}>
 					<div className="col-md-12">
 						<h2>Network node list</h2>
 					</div>

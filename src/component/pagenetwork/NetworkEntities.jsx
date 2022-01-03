@@ -15,7 +15,11 @@ export default class NetworkEntities extends React.Component {
 			<div id="NetworkEntities" className="max-sized-page fade-in">
 				<div className={"row"}>
 					<div className="col-md-12">
-						<h1>Logo</h1>
+						<h1>Entities</h1>
+					</div>
+
+					<div className="col-md-12">
+						In construction
 					</div>
 				</div>
 			</div>
