@@ -158,6 +158,7 @@ export default class MediaImage extends React.Component {
 											height={i.height}
 											width={i.width}
 											creationDate={i.creation_date}
+											afterDeletion={() => this.refresh()}
 										/>
 									</div>
 								))}

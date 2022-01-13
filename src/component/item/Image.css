@@ -43,3 +43,13 @@
 .Image-size {
     text-align: center;
 }
+
+.Image-link {
+    padding: 2px 8px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.Image-link:hover {
+    background-color: rgba(0, 159, 227, 0.1);
+}

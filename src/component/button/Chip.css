@@ -59,6 +59,10 @@
     font-size: 12px;
 }
 
+.Chip-close i {
+    font-size: 12px !important;
+}
+
 .Chip-close:hover {
     color: #ffa8b0;
 }

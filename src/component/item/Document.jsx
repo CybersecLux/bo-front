@@ -7,6 +7,9 @@ import Chip from "../button/Chip.jsx";
 import Message from "../box/Message.jsx";
 import { getRequest, postRequest } from "../../utils/request.jsx";
 import Loading from "../box/Loading.jsx";
+import { getApiURL } from "../../utils/env.jsx";
+import copyToClipboard from "../../utils/clipboard.jsx";
+import DialogConfirmation from "../dialog/DialogConfirmation.jsx";
 
 export default class Document extends Component {
 	constructor(props) {
@@ -78,6 +81,23 @@ export default class Document extends Component {
 		});
 	}
 
+	confirmDeletion() {
+		const params = {
+			id: this.props.id,
+		};
+
+		postRequest.call(this, "media/delete_document", params, () => {
+			document.elementFromPoint(100, 0).click();
+			nm.info("The document has been deleted");
+
+			if (typeof this.props.afterDeletion !== "undefined") this.props.afterDeletion();
+		}, (response) => {
+			nm.warning(response.statusText);
+		}, (error) => {
+			nm.error(error.message);
+		});
+	}
+
 	addKeyword(word) {
 		if (this.state.document) {
 			let words;
@@ -126,6 +146,16 @@ export default class Document extends Component {
 
 					<div className={"col-md-3"}>
 						<div className="top-right-buttons">
+							<DialogConfirmation
+								text={"Are you sure you want to delete this document?"}
+								trigger={
+									<button
+										className={"red-background"}>
+										<i className="fas fa-trash-alt"/>
+									</button>
+								}
+								afterConfirmation={() => this.confirmDeletion()}
+							/>
 							<button
 								className={"grey-background"}
 								data-hover="Close"
@@ -144,6 +174,27 @@ export default class Document extends Component {
 										<i className="fas fa-file"/>
 										<div>{this.state.document.filename}</div>
 										<div>{this.props.creationDate}</div>
+									</div>
+								</div>
+
+								<div className="col-md-12">
+									<h3>Links</h3>
+								</div>
+
+								<div className="col-md-12">
+									<div
+										className="Document-link"
+										onClick={() => copyToClipboard(getApiURL()
+											+ "public/get_public_document/" + this.state.document.id)}>
+										<i className="fas fa-link"/>&nbsp;
+										{getApiURL() + "public/get_public_document/" + this.state.document.id}
+									</div>
+									<div
+										className="Document-link"
+										onClick={() => copyToClipboard(getApiURL()
+											+ "public/get_public_document/" + this.state.document.filename)}>
+										<i className="fas fa-link"/>&nbsp;
+										{getApiURL() + "public/get_public_document/" + this.state.document.filename}
 									</div>
 								</div>
 

@@ -148,6 +148,7 @@ export default class MediaDocument extends React.Component {
 											id={i.id}
 											filename={i.filename}
 											creationDate={i.creation_date}
+											afterDeletion={() => this.refresh()}
 										/>
 									</div>
 								))}

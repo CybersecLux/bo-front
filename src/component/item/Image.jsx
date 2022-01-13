@@ -9,6 +9,8 @@ import Message from "../box/Message.jsx";
 import { getRequest, postRequest } from "../../utils/request.jsx";
 import Loading from "../box/Loading.jsx";
 import CheckBox from "../button/CheckBox.jsx";
+import copyToClipboard from "../../utils/clipboard.jsx";
+import DialogConfirmation from "../dialog/DialogConfirmation.jsx";
 
 export default class Image extends Component {
 	constructor(props) {
@@ -87,6 +89,23 @@ export default class Image extends Component {
 		});
 	}
 
+	confirmDeletion() {
+		const params = {
+			id: this.props.id,
+		};
+
+		postRequest.call(this, "media/delete_image", params, () => {
+			document.elementFromPoint(100, 0).click();
+			nm.info("The image has been deleted");
+
+			if (typeof this.props.afterDeletion !== "undefined") this.props.afterDeletion();
+		}, (response) => {
+			nm.warning(response.statusText);
+		}, (error) => {
+			nm.error(error.message);
+		});
+	}
+
 	addKeyword(word) {
 		if (this.state.image) {
 			let words;
@@ -145,6 +164,16 @@ export default class Image extends Component {
 
 					<div className={"col-md-3"}>
 						<div className="top-right-buttons">
+							<DialogConfirmation
+								text={"Are you sure you want to delete this image?"}
+								trigger={
+									<button
+										className={"red-background"}>
+										<i className="fas fa-trash-alt"/>
+									</button>
+								}
+								afterConfirmation={() => this.confirmDeletion()}
+							/>
 							<button
 								className={"grey-background"}
 								data-hover="Close"
@@ -166,6 +195,20 @@ export default class Image extends Component {
 
 								<div className="col-md-12 Image-size">
 									<b>{this.state.image.width}x{this.state.image.height}</b>
+								</div>
+
+								<div className="col-md-12">
+									<h3>Links</h3>
+								</div>
+
+								<div className="col-md-12">
+									<div
+										className="Document-link"
+										onClick={() => copyToClipboard(getApiURL()
+											+ "public/get_public_image/" + this.state.image.id)}>
+										<i className="fas fa-link"/>&nbsp;
+										{getApiURL() + "public/get_public_image/" + this.state.image.id}
+									</div>
 								</div>
 
 								<div className="col-md-12">

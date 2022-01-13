@@ -54,6 +54,11 @@ export default class DialogAddDocument extends React.Component {
 		postRequest.call(this, "media/add_document", params, () => {
 			if (this.props.afterValidate !== undefined) this.props.afterValidate();
 			close();
+			this.setState({
+				document: null,
+				filename: null,
+				size: null,
+			});
 			nm.info("The document has been added");
 		}, (response) => {
 			nm.warning(response.statusText);

@@ -30,3 +30,13 @@
 .Document-document i {
     font-size: 35px !important;
 }
+
+.Document-link {
+    padding: 2px 8px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.Document-link:hover {
+    background-color: rgba(0, 159, 227, 0.1);
+}
