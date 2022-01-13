@@ -15,6 +15,7 @@
     border: 7px dashed #8fddff;
     border-radius: 8px;
     display: table;
+    cursor: pointer;
 }
 
 .DialogAddImage-cropper {

@@ -1,187 +1,60 @@
 import React from "react";
 import "./PageMedia.css";
-import { NotificationManager as nm } from "react-notifications";
-import Loading from "./box/Loading.jsx";
-import Message from "./box/Message.jsx";
-import Image from "./item/Image.jsx";
-import { getRequest } from "../utils/request.jsx";
-import DialogAddImage from "./dialog/DialogAddImage.jsx";
-import CheckBox from "./button/CheckBox.jsx";
-import { dictToURI } from "../utils/url.jsx";
-import FormLine from "./button/FormLine.jsx";
+import MediaImage from "./pagemedia/MediaImage.jsx";
+import MediaDocument from "./pagemedia/MediaDocument.jsx";
+import Tab from "./tab/Tab.jsx";
+import { getUrlParameter } from "../utils/url.jsx";
 
 export default class PageMedia extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.refresh = this.refresh.bind(this);
+		this.onMenuClick = this.onMenuClick.bind(this);
 
 		this.state = {
-			images: null,
-			page: 1,
-			search: null,
-			order: "desc",
-			showLogoOnly: false,
-			showLoadMoreButton: true,
+			notifications: null,
+			selectedMenu: null,
+			tabs: [
+				"image",
+				"document",
+			],
 		};
 	}
 
 	componentDidMount() {
-		this.refresh();
-	}
-
-	componentDidUpdate(_, prevState) {
-		if (prevState.showLogoOnly !== this.state.showLogoOnly
-			|| prevState.order !== this.state.order
-			|| (prevState.search !== this.state.search
-				&& PageMedia.isSearchValid(this.state.search))) {
-			this.refresh();
+		if (getUrlParameter("tab") !== null && this.state.tabs.indexOf(getUrlParameter("tab")) >= 0) {
+			this.setState({ selectedMenu: getUrlParameter("tab") });
 		}
 	}
 
-	refresh() {
-		this.setState({
-			images: null,
-			page: 1,
-		}, () => {
-			this.fetchImages();
-		});
+	componentDidUpdate() {
+		if (this.state.selectedMenu !== getUrlParameter("tab")
+			&& this.state.tabs.indexOf(getUrlParameter("tab")) >= 0) {
+			this.setState({ selectedMenu: getUrlParameter("tab") });
+		}
 	}
 
-	fetchImages() {
-		const params = {
-			logo_only: this.state.showLogoOnly,
-			order: this.state.order,
-			page: this.state.page,
-			search: this.state.search,
-		};
-
-		getRequest.call(this, "media/get_images?" + dictToURI(params), (data) => {
-			this.setState({
-				images: (this.state.images === null ? [] : this.state.images).concat(data.items),
-				page: this.state.page + 1,
-				showLoadMoreButton: data.pagination.page < data.pagination.pages,
-			});
-		}, (response) => {
-			nm.warning(response.statusText);
-		}, (error) => {
-			nm.error(error.message);
-		});
-	}
-
-	static isSearchValid(search) {
-		return !search || search.length > 2;
-	}
-
-	changeState(field, value) {
-		this.setState({ [field]: value });
+	onMenuClick(m) {
+		this.props.history.push("?tab=" + m);
 	}
 
 	render() {
 		return (
 			<div id="PageMedia" className="page max-sized-page">
-				<div className={"row"}>
-					<div className="col-md-12">
-						<h1>Media</h1>
-						<div className="top-right-buttons">
-							<button
-								onClick={() => this.refresh()}>
-								<i className="fas fa-redo-alt"/>
-							</button>
-							<DialogAddImage
-								trigger={
-									<button
-										className={"blue-background"}
-										data-hover="Filter">
-										<span><i className="fas fa-plus"/></span>
-									</button>
-								}
-								afterValidate={this.refresh}
-							/>
-						</div>
-					</div>
-				</div>
-
-				<div className={"row row-spaced"}>
-					<div className="col-md-6">
-						<FormLine
-							label={"Search"}
-							value={this.state.search}
-							onChange={(v) => this.changeState("search", v)}
-							labelWidth={4}
-							format={() => PageMedia.isSearchValid(this.state.search)}
-						/>
-					</div>
-					<div className="col-md-6">
-						<div className="PageMedia-buttons">
-							<CheckBox
-								label={"SHOW LOGO ONLY"}
-								value={this.state.showLogoOnly}
-								onClick={() => this.changeState("showLogoOnly", !this.state.showLogoOnly)}
-							/>
-							<CheckBox
-								label={this.state.order === "asc" ? "OLDEST FIRST" : "NEWEST FIRST"}
-								value={this.state.order !== "asc"}
-								onClick={() => this.changeState(
-									"order",
-									this.state.order === "asc" ? "desc" : "asc",
-								)}
-							/>
-						</div>
-					</div>
-				</div>
-
-				<div className={"row row-spaced"}>
-					<div className="col-md-12">
-						{this.state.images === null
-							&& <Loading
-								height={300}
-							/>
-						}
-
-						{this.state.images !== null && this.state.images.length === 0
-							&& <Message
-								text={"No media in the library"}
-								height={300}
-							/>
-						}
-
-						{this.state.images !== null && this.state.images.length !== 0
-							&& <div className="row">
-								{this.state.images.map((i) => i).map((i) => (
-									<div
-										key={"Image-" + i.id}
-										className="col-md-2 col-sm-3">
-										<Image
-											id={i.id}
-											thumbnail={i.thumbnail}
-											height={i.height}
-											width={i.width}
-											creationDate={i.creation_date}
-										/>
-									</div>
-								))}
-							</div>
-						}
-					</div>
-				</div>
-
-				<div className={"row row-spaced"}>
-					<div className="col-md-12 centered-buttons">
-						{this.state.showLoadMoreButton
-							? <button
-								className={"blue-background"}
-								onClick={() => this.fetchImages()}>
-								<i className="fas fa-plus"/> Load more images
-							</button>
-							: <button
-								className={"blue-background"}
-								disabled={true}>
-								No more image to load
-							</button>
-						}
-					</div>
-				</div>
+				<Tab
+					labels={["Images", "Documents"]}
+					selectedMenu={this.state.selectedMenu}
+					onMenuClick={this.onMenuClick}
+					keys={this.state.tabs}
+					content={[
+						<MediaImage
+							key={"image"}
+						/>,
+						<MediaDocument
+							key={"document"}
+						/>,
+					]}
+				/>
 			</div>
 		);
 	}
