@@ -1,5 +1,5 @@
 
-.Image {
+.Document {
     font-size: 15px;
     display: inline-block;
     width: 100%;
@@ -7,39 +7,26 @@
     padding: 8px 7px 8px 7px;
 }
 
-.Image:hover {
+.Document:hover {
     background-color: rgba(0, 159, 227, 0.1);
 }
 
-.Image-selected {
+.Document-selected {
     background-color: #bcebff !important;
 }
 
-.Image-selected:hover {
+.Document-selected:hover {
     background-color: #8fddff !important;
 }
 
-.Image-image {
+.Document-document {
+    padding: 5px 10px;
+    height: 100%;
     width: 100%;
     text-align: center;
+    vertical-align: middle;
 }
 
-.Image-image img {
-    max-width: 100%;
-}
-
-.Image-text {
-    text-align: center;
-}
-
-.Image img {
-    max-width: 100%;
-}
-
-.Image-title {
-    width: calc(100% - 120px);
-}
-
-.Image-size {
-    text-align: center;
+.Document-document i {
+    font-size: 35px !important;
 }

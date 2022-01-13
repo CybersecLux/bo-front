@@ -106,10 +106,24 @@ export default class DialogAddImage extends React.Component {
 				closeOnDocumentClick
 			>
 				{(close) => <div className={"row"}>
-					<div className={"col-md-12"}>
+					<div className={"col-md-9"}>
 						<h2>{this.state.imageContent !== null
-                            && this.state.croppedImageContent === null ? "Crop" : "Add"} the new image</h2>
+							&& this.state.croppedImageContent === null ? "Crop" : "Add"} the new image</h2>
+					</div>
 
+					<div className={"col-md-3"}>
+						<div className="top-right-buttons">
+							<button
+								className={"grey-background"}
+								data-hover="Close"
+								data-active=""
+								onClick={close}>
+								<span><i className="far fa-times-circle"/></span>
+							</button>
+						</div>
+					</div>
+
+					<div className={"col-md-12"}>
 						<Breadcrumb>
 							<Breadcrumb.Item
 								active={false}

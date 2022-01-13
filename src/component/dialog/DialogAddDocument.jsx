@@ -75,9 +75,23 @@ export default class DialogAddDocument extends React.Component {
 				closeOnDocumentClick
 			>
 				{(close) => <div className={"row"}>
-					<div className={"col-md-12"}>
+					<div className={"col-md-9"}>
 						<h2>Add the new document</h2>
+					</div>
 
+					<div className={"col-md-3"}>
+						<div className="top-right-buttons">
+							<button
+								className={"grey-background"}
+								data-hover="Close"
+								data-active=""
+								onClick={close}>
+								<span><i className="far fa-times-circle"/></span>
+							</button>
+						</div>
+					</div>
+
+					<div className={"col-md-12"}>
 						<Breadcrumb>
 							<Breadcrumb.Item
 								onClick={() => this.setState({

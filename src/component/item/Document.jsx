@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import "./Document.css";
 import { NotificationManager as nm } from "react-notifications";
 import Popup from "reactjs-popup";
-import { getApiURL } from "../../utils/env.jsx";
 import { validateWord } from "../../utils/re.jsx";
 import Chip from "../button/Chip.jsx";
 import Message from "../box/Message.jsx";
@@ -107,49 +106,45 @@ export default class Document extends Component {
 				className="Popup-full-size"
 				trigger={
 					<div className={"Document " + (this.state.selected ? "Document-selected" : "")}>
-						<div className={"Document-document"}>
-							<img src={"data:image/jpeg;base64, " + this.props.thumbnail}/>
+						<div className="Document-document">
+							<i className="fas fa-file"/>
+							<div>{this.props.filename ? this.props.filename : "Loading"}</div>
+							<div>{this.props.creationDate ? this.props.creationDate : ""}</div>
 						</div>
-
-						{this.props.width && this.props.height
-							&& <div className={"Document-text"}>
-								{this.props.width}x{this.props.height}
-							</div>
-						}
-
-						{this.props.creationDate
-							&& <div className={"Document-text"}>
-								{this.props.creationDate}
-							</div>
-						}
 					</div>
 				}
 				modal
 				closeOnDocumentClick
 				onOpen={() => this.getDocument()}
 			>
-				<div className="row">
-					<div className="col-md-12">
+				{(close) => <div className="row">
+					<div className="col-md-9">
 						<h1 className="Document-title">
                             Document
 						</h1>
+					</div>
+
+					<div className={"col-md-3"}>
+						<div className="top-right-buttons">
+							<button
+								className={"grey-background"}
+								data-hover="Close"
+								data-active=""
+								onClick={close}>
+								<span><i className="far fa-times-circle"/></span>
+							</button>
+						</div>
 					</div>
 
 					<div className="col-md-12">
 						{this.state.document
 							? <div className="row">
 								<div className="col-md-12">
-									<div className={"Document-document"}>
-										<img src={getApiURL() + "public/get_public_document/" + this.props.id}/>
+									<div className="Document-document">
+										<i className="fas fa-file"/>
+										<div>{this.state.document.filename}</div>
+										<div>{this.props.creationDate}</div>
 									</div>
-								</div>
-
-								<div className="col-md-12">
-									<h3>Fields</h3>
-								</div>
-
-								<div className="col-md-6 FormLine-label">
-									Include in logo generator
 								</div>
 
 								<div className="col-md-12">
@@ -200,7 +195,7 @@ export default class Document extends Component {
 							/>
 						}
 					</div>
-				</div>
+				</div>}
 			</Popup>
 		);
 	}

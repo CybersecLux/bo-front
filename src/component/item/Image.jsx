@@ -136,11 +136,23 @@ export default class Image extends Component {
 				closeOnDocumentClick
 				onOpen={this.getImage}
 			>
-				<div className="row">
-					<div className="col-md-12">
+				{(close) => <div className="row">
+					<div className="col-md-9">
 						<h1 className="Image-title">
                             Image
 						</h1>
+					</div>
+
+					<div className={"col-md-3"}>
+						<div className="top-right-buttons">
+							<button
+								className={"grey-background"}
+								data-hover="Close"
+								data-active=""
+								onClick={close}>
+								<span><i className="far fa-times-circle"/></span>
+							</button>
+						</div>
 					</div>
 
 					<div className="col-md-12">
@@ -219,7 +231,7 @@ export default class Image extends Component {
 							/>
 						}
 					</div>
-				</div>
+				</div>}
 			</Popup>
 		);
 	}

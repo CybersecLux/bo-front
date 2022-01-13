@@ -143,12 +143,10 @@ export default class MediaDocument extends React.Component {
 								{this.state.documents.map((i) => i).map((i) => (
 									<div
 										key={"Document-" + i.id}
-										className="col-md-2 col-sm-3">
+										className="col-md-4 col-sm-6">
 										<Document
 											id={i.id}
-											thumbnail={i.thumbnail}
-											height={i.height}
-											width={i.width}
+											filename={i.filename}
 											creationDate={i.creation_date}
 										/>
 									</div>
