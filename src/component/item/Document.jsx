@@ -185,13 +185,6 @@ export default class Document extends Component {
 									<div
 										className="Document-link"
 										onClick={() => copyToClipboard(getApiURL()
-											+ "public/get_public_document/" + this.state.document.id)}>
-										<i className="fas fa-link"/>&nbsp;
-										{getApiURL() + "public/get_public_document/" + this.state.document.id}
-									</div>
-									<div
-										className="Document-link"
-										onClick={() => copyToClipboard(getApiURL()
 											+ "public/get_public_document/" + this.state.document.filename)}>
 										<i className="fas fa-link"/>&nbsp;
 										{getApiURL() + "public/get_public_document/" + this.state.document.filename}
