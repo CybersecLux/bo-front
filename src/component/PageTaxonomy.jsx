@@ -386,7 +386,9 @@ export default class PageTaxonomy extends React.Component {
 								className={"small-button PageTaxonomy-Table-button"}
 								disabled={!value.active_on_articles}>
 								{value.accepted_article_types
-									? value.accepted_article_types.split(",").length + " selected"
+									? value.accepted_article_types
+										.split(",")
+										.filter((w) => w.trim().length > 0).length + " selected"
 									: "All types"
 								}
 							</button>
@@ -401,8 +403,6 @@ export default class PageTaxonomy extends React.Component {
 								<div className="right-buttons">
 									<button
 										className={"grey-background"}
-										data-hover="Close"
-										data-active=""
 										onClick={close}>
 										<span><i className="far fa-times-circle"/></span>
 									</button>
@@ -425,11 +425,12 @@ export default class PageTaxonomy extends React.Component {
 												if (!oldValue.includes(t)) {
 													newValue = oldValue.split(",");
 													newValue.push(t);
+													newValue = newValue.filter((w) => w.trim().length > 0);
 													newValue = newValue.join(",");
 												}
 											} else {
 												newValue = oldValue.split(",");
-												newValue = newValue.filter((w) => w !== t && w.length > 0);
+												newValue = newValue.filter((w) => w !== t && w.trim().length > 0);
 												newValue = newValue.join(",");
 											}
 
