@@ -29,12 +29,6 @@ export default class Group extends Component {
 	}
 
 	refresh() {
-		this.setState({
-			group: null,
-			resources: null,
-			rights: null,
-		});
-
 		getRequest.call(this, "user/get_user_group/" + this.props.id, (data) => {
 			this.setState({
 				group: data,
@@ -55,6 +49,10 @@ export default class Group extends Component {
 			nm.error(error.message);
 		});
 
+		this.getRights();
+	}
+
+	getRights() {
 		getRequest.call(this, "user/get_user_group_rights/" + this.props.id, (data) => {
 			this.setState({
 				rights: data,
@@ -139,7 +137,7 @@ export default class Group extends Component {
 		if (result.destination.droppableId === "yes") {
 			postRequest.call(this, "user/add_user_group_right", params, () => {
 				nm.info("The right has been granted");
-				this.refresh();
+				this.getRights();
 			}, (response) => {
 				nm.warning(response.statusText);
 			}, (error) => {
@@ -148,7 +146,7 @@ export default class Group extends Component {
 		} else {
 			postRequest.call(this, "user/delete_user_group_right", params, () => {
 				nm.info("The right has been revoked");
-				this.refresh();
+				this.getRights();
 			}, (response) => {
 				nm.warning(response.statusText);
 			}, (error) => {
