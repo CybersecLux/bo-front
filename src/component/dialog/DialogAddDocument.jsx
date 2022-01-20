@@ -32,16 +32,14 @@ export default class DialogAddDocument extends React.Component {
 			reader.onabort = () => console.log("file reading was aborted");
 			reader.onerror = () => console.log("An error happened while reading the file");
 			reader.onload = () => {
-				const blob = new Blob([reader.result], { type: files[0].type });
-				const documentUrl = URL.createObjectURL(blob);
 				this.setState({
-					document: documentUrl,
+					document: reader.result,
 					filename: files[0].name,
 					size: files[0].size,
 				});
 			};
 
-			reader.readAsArrayBuffer(files[0]);
+			reader.readAsBinaryString(files[0]);
 		}
 	}
 
