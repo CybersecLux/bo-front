@@ -4,6 +4,7 @@ import { NotificationManager as nm } from "react-notifications";
 import dompurify from "dompurify";
 import Popup from "reactjs-popup";
 import Chip from "../button/Chip.jsx";
+import DialogConfirmation from "../dialog/DialogConfirmation.jsx";
 import { postRequest } from "../../utils/request.jsx";
 import Company from "./Company.jsx";
 
@@ -121,12 +122,6 @@ export default class RssArticle extends Component {
 								</div>
 							</div>
 
-							<div className={"col-md-12 row-spaced"}>
-								<Chip
-									label={this.props.info.source}
-								/>
-							</div>
-
 							<div className={"col-md-12 right-buttons row-spaced"}>
 								<button
 									className={"blue-background"}
@@ -134,12 +129,30 @@ export default class RssArticle extends Component {
 								>
 									<i className="fas fa-arrow-circle-right"/> Open external website
 								</button>
-								<button
-									className={"blue-background"}
-									onClick={this.addArticle}
-								>
-									<i className="fas fa-plus"/> Add article
-								</button>
+								<DialogConfirmation
+									text={"The article will be created with the DRAFT status. "
+										+ "Please review the content and change the status to PUBLIC "
+										+ "to publish it."}
+									trigger={
+										<button
+											className={"blue-background"}
+											onClick={this.addArticle}
+										>
+											<i className="fas fa-plus"/> Add article...
+										</button>
+									}
+									afterConfirmation={() => this.addArticle()}
+								/>
+							</div>
+
+							<div className={"col-md-12 row-spaced"}>
+								<h3>
+									Source
+								</h3>
+
+								<Chip
+									label={this.props.info.source}
+								/>
 							</div>
 
 							{this.props.company
