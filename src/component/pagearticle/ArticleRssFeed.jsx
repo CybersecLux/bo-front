@@ -2,11 +2,13 @@ import React from "react";
 import "./ArticleRssFeed.css";
 import { NotificationManager as nm } from "react-notifications";
 import Loading from "../box/Loading.jsx";
-import Info from "../box/Info.jsx";
+import Warning from "../box/Warning.jsx";
 import Table from "../table/Table.jsx";
 import { getRequest, postRequest, getRssFeed } from "../../utils/request.jsx";
 import { validateUrl } from "../../utils/re.jsx";
 import DialogConfirmation from "../dialog/DialogConfirmation.jsx";
+import DialogSelectCompany from "../dialog/DialogSelectCompany.jsx";
+import Company from "../item/Company.jsx";
 import FormLine from "../button/FormLine.jsx";
 import RssArticle from "../item/RssArticle.jsx";
 
@@ -20,9 +22,11 @@ export default class ArticleRssFeed extends React.Component {
 
 		this.state = {
 			rssFeedField: "",
+			articleFilterField: "",
 			rssFeeds: null,
 			rssArticles: null,
 			requestMessages: [],
+			rssFeedCompanies: null,
 		};
 	}
 
@@ -39,10 +43,30 @@ export default class ArticleRssFeed extends React.Component {
 	refresh() {
 		this.setState({
 			rssFeeds: null,
+			rssFeedCompanies: null,
 		}, () => {
 			getRequest.call(this, "rss/get_rss_feeds", (data) => {
 				this.setState({
 					rssFeeds: data,
+				}, () => {
+					const companyIds = data
+						.map((f) => f.company_id)
+						.filter((f) => f);
+
+					if (companyIds.length > 0) {
+						getRequest.call(this, "public/get_public_companies?ids="
+							+ companyIds.join(","), (data2) => {
+							this.setState({
+								rssFeedCompanies: data2,
+							});
+						}, (response) => {
+							nm.warning(response.statusText);
+						}, (error) => {
+							nm.error(error.message);
+						});
+					} else {
+						this.setState({ rssFeedCompanies: [] });
+					}
 				});
 			}, (response) => {
 				nm.warning(response.statusText);
@@ -82,6 +106,22 @@ export default class ArticleRssFeed extends React.Component {
 		});
 	}
 
+	updateRssFeed(url, newValues) {
+		const params = {
+			url,
+			...newValues,
+		};
+
+		postRequest.call(this, "rss/update_rss_feed", params, () => {
+			this.refresh();
+			nm.info("The RSS feed has been updated");
+		}, (response) => {
+			nm.warning(response.statusText);
+		}, (error) => {
+			nm.error(error.message);
+		});
+	}
+
 	fetchRssFeeds() {
 		if (this.state.rssFeeds) {
 			this.setState({ rssArticles: null, requestMessages: [] }, () => {
@@ -95,6 +135,8 @@ export default class ArticleRssFeed extends React.Component {
 								d.items.forEach((o) => {
 									// eslint-disable-next-line no-param-reassign
 									o.source = d.feed.title;
+									// eslint-disable-next-line no-param-reassign
+									o.company_id = this.state.rssFeeds[i].company_id;
 								});
 							}
 
@@ -124,6 +166,29 @@ export default class ArticleRssFeed extends React.Component {
 		}));
 	}
 
+	filterRssFeedArticles() {
+		if (!this.state.articleFilterField || this.state.articleFilterField.length === 0) {
+			return this.state.rssArticles;
+		}
+
+		const words = this.state.articleFilterField.split(" ")
+			.filter((w) => w.length > 0)
+			.map((w) => w.toLowerCase());
+
+		function containWords(ws, c) {
+			for (let i = 0; i < ws.length; i++) {
+				if (!c.includes(ws[i])) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		return this.state.rssArticles
+			.filter((a) => containWords(words, (a.title + a.description).toLowerCase()));
+	}
+
 	changeState(field, value) {
 		this.setState({ [field]: value });
 	}
@@ -133,31 +198,93 @@ export default class ArticleRssFeed extends React.Component {
 			{
 				Header: "URL",
 				accessor: "url",
+				width: 200,
 			},
 			{
-				Header: " ",
+				Header: "Entity",
+				accessor: (x) => x,
+				Cell: ({ cell: { value } }) => {
+					if (!value.company_id) {
+						return <div className="ArticleRssFeed-feed-company">
+							<span>No entity assigned</span>
+						</div>;
+					}
+
+					return <Company
+						id={value.company_id}
+						name={this.state.rssFeedCompanies
+							&& this.state.rssFeedCompanies.filter((c) => value.company_id === c.id).length > 0
+							? this.state.rssFeedCompanies.filter((c) => value.company_id === c.id)[0].name
+							: "Loading..."}
+						afterDeletion={() => this.refresh()}
+					/>;
+				},
+				width: 200,
+			},
+			{
+				Header: "Action",
 				accessor: (x) => x,
 				Cell: ({ cell: { value } }) => (
-					<DialogConfirmation
-						text={"Are you sure you want to delete this category?"}
-						trigger={
-							<button
-								className={"small-button red-background Table-right-button"}>
-								<i className="fas fa-trash-alt"/>
-							</button>
+					<div>
+						<DialogConfirmation
+							text={"Are you sure you want to delete this RSS feed?"}
+							trigger={
+								<button
+									className={"small-button red-background Table-right-button"}
+									title={"Delete the RSS feed"}>
+									<i className="fas fa-trash-alt"/>
+								</button>
+							}
+							afterConfirmation={() => this.deleteRssFeed(value.url)}
+						/>
+
+						{value.company_id
+							? <DialogConfirmation
+								text={"Are you sure you want to remove the entity assignment?"}
+								trigger={
+									<button
+										className={"small-button red-background"}
+										title={"Assign an entity to the feed"}>
+										<i className="fas fa-times"/>
+										&nbsp;
+										<i className="fas fa-building"/>
+									</button>
+								}
+								afterConfirmation={() => this.updateRssFeed(value.url, { company_id: null })}
+							/>
+							: <DialogSelectCompany
+								trigger={
+									<button
+										className={"small-button"}
+										title={"Assign an entity to the RSS feed"}>
+										<i className="fas fa-plus"/>
+										&nbsp;
+										<i className="fas fa-building"/>
+									</button>
+								}
+								onConfirmation={(id) => this.updateRssFeed(value.url, { company_id: id })}
+							/>
 						}
-						afterConfirmation={() => this.deleteRssFeed(value.url)}
-					/>
+					</div>
 				),
-				width: 50,
+				width: 45,
 			},
 		];
 
 		return (
 			<div id="ArticleRssFeed" className="max-sized-page fade-in">
 				<div className={"row row-spaced"}>
-					<div className="col-md-12">
+					<div className="col-md-9">
 						<h1>RSS Feeds</h1>
+					</div>
+
+					<div className="col-md-3">
+						<div className="top-right-buttons">
+							<button
+								onClick={() => this.refresh()}>
+								<i className="fas fa-redo-alt"/>
+							</button>
+						</div>
 					</div>
 
 					<div className="col-md-12">
@@ -168,7 +295,7 @@ export default class ArticleRssFeed extends React.Component {
 						/>
 					</div>
 
-					<div className="col-md-12 right-buttons">
+					<div className="col-md-12 right-buttons row-spaced">
 						<button
 							className={"blue-background"}
 							onClick={this.addRssFeed}
@@ -193,7 +320,7 @@ export default class ArticleRssFeed extends React.Component {
 				{this.state.requestMessages.length > 0
 					&& <div className={"row row-spaced"}>
 						<div className="col-md-12">
-							{this.state.requestMessages.map((m, i) => <Info
+							{this.state.requestMessages.map((m, i) => <Warning
 								key={i}
 								content={m}
 							/>)}
@@ -205,16 +332,26 @@ export default class ArticleRssFeed extends React.Component {
 					<div className="col-md-12">
 						<h1>Import news</h1>
 					</div>
-				</div>
 
-				<div className={"row"}>
-					{this.state.rssArticles
+					<div className="col-md-12 row-spaced">
+						<FormLine
+							label={"Filter by words"}
+							value={this.state.articleFilterField}
+							onChange={(v) => this.changeState("articleFilterField", v)}
+						/>
+					</div>
+
+					{this.filterRssFeedArticles()
 						? <div className={"row"}>
-							{this.state.rssArticles.map((a, i) => <div
+							{this.filterRssFeedArticles().map((a, i) => <div
 								className="col-md-12"
 								key={i}>
 								<RssArticle
 									info={a}
+									company={this.state.rssFeedCompanies
+										&& this.state.rssFeedCompanies.filter((c) => a.company_id === c.id).length > 0
+										? this.state.rssFeedCompanies.filter((c) => a.company_id === c.id)[0]
+										: null}
 								/>
 							</div>)}
 						</div>

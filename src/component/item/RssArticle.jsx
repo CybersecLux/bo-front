@@ -5,7 +5,7 @@ import dompurify from "dompurify";
 import Popup from "reactjs-popup";
 import Chip from "../button/Chip.jsx";
 import { postRequest } from "../../utils/request.jsx";
-/* import { dateToString } from "../../utils/date.jsx"; */
+import Company from "./Company.jsx";
 
 export default class RssArticle extends Component {
 	constructor(props) {
@@ -35,6 +35,21 @@ export default class RssArticle extends Component {
 
 			postRequest.call(this, "article/update_article", params, () => {
 				nm.info("The article info has been updated");
+
+				if (this.props.company) {
+					const params2 = {
+						article: article.id,
+						company: this.props.company.id,
+					};
+
+					postRequest.call(this, "article/add_company_tag", params2, () => {
+						nm.info("The entity has been tagged to the article");
+					}, (response) => {
+						nm.warning(response.statusText);
+					}, (error) => {
+						nm.error(error.message);
+					});
+				}
 			}, (response) => {
 				nm.warning(response.statusText);
 			}, (error) => {
@@ -56,6 +71,15 @@ export default class RssArticle extends Component {
 					<Chip
 						label={this.props.info.source}
 					/>
+				</div>
+
+				<div className="card-text">
+					{this.props.company
+						&& <Company
+							id={this.props.company.id}
+							name={this.props.company.name}
+						/>
+					}
 				</div>
 
 				<div className="card-text">
@@ -117,13 +141,25 @@ export default class RssArticle extends Component {
 									<i className="fas fa-plus"/> Add article
 								</button>
 							</div>
-							<div className={"col-md-12"}>
+
+							{this.props.company
+								&& <div className={"col-md-6 row-spaced"}>
+									<h3>
+										Entity
+									</h3>
+
+									<Company
+										id={this.props.company.id}
+										name={this.props.company.name}
+									/>
+								</div>
+							}
+
+							<div className={"col-md-6 row-spaced"}>
 								<h3>
 									Metadata
 								</h3>
-							</div>
 
-							<div className={"col-md-12 row-spaced"}>
 								Publication date: {this.props.info.pubDate}
 							</div>
 
@@ -133,7 +169,7 @@ export default class RssArticle extends Component {
 								</h3>
 							</div>
 
-							<div className={"col-md-12"}>
+							<div className={"col-md-12 row-spaced"}>
 								<div dangerouslySetInnerHTML={{
 									__html:
 									dompurify.sanitize(this.props.info.description),
