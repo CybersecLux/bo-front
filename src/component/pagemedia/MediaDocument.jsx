@@ -53,7 +53,7 @@ export default class MediaDocument extends React.Component {
 			search: this.state.search,
 		};
 
-		getRequest.call(this, "media/get_documents?" + dictToURI(params), (data) => {
+		getRequest.call(this, "public/get_public_documents?" + dictToURI(params), (data) => {
 			this.setState({
 				documents: (this.state.documents === null ? [] : this.state.documents).concat(data.items),
 				page: this.state.page + 1,
