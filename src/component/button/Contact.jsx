@@ -124,6 +124,19 @@ export default class Contact extends React.Component {
 						onChange={(v) => this.changeInfoState("representative", v)}
 						format={validateNotNull}
 					/>
+					<FormLine
+						label={"Department"}
+						type={"select"}
+						value={this.state.info.department}
+						options={this.props.enums === null
+                            || this.props.enums.department === undefined
+							? []
+							: [{ value: null, label: "-" }].concat(
+								this.props.enums.department.map((o) => ({ label: o, value: o })),
+							)}
+						onChange={(v) => this.changeInfoState("department", v)}
+						format={validateNotNull}
+					/>
 					{this.state.info.representative !== undefined
 						&& this.state.info.representative === "PHYSICAL PERSON"
 						&& <FormLine
