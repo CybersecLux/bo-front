@@ -11,7 +11,7 @@
 .DialogAddImage-dragdrop {
 	width: 100%;
 	max-height: calc(100vh - 300px);
-	min-height: 300px;
+	min-height: 200px;
     border: 7px dashed #8fddff;
     border-radius: 8px;
     display: table;
@@ -21,7 +21,7 @@
 .DialogAddImage-cropper {
 	width: 100%;
 	max-height: calc(100vh - 300px);
-	min-height: 300px;
+	min-height: 250px;
 }
 
 .DialogAddImage-dragdrop-textContent {
@@ -45,4 +45,17 @@
 	max-width: 100%;
 	max-height: calc(100vh - 300px);
 	border: 7px dashed #8fddff;
+}
+
+.DialogAddImage-or {
+	width: 100%;
+	text-align: center;
+	margin-top: 30px;
+	margin-bottom: 30px;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.DialogAddImage-content .FormLine {
+	margin-top: 30px;
 }

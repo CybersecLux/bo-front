@@ -6,7 +6,8 @@ import Dropzone from "react-dropzone";
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
 import { Breadcrumb } from "react-bootstrap";
-import { postRequest } from "../../utils/request.jsx";
+import { postRequest, getForeignImage } from "../../utils/request.jsx";
+import { validateUrl } from "../../utils/re.jsx";
 
 export default class DialogAddImage extends React.Component {
 	constructor(props) {
@@ -26,7 +27,39 @@ export default class DialogAddImage extends React.Component {
 			imageContent: null,
 
 			croppedImageContent: null,
+
+			link: "",
 		};
+	}
+
+	componentDidUpdate(_, prevState) {
+		if (prevState.link !== this.state.link) {
+			if (validateUrl(this.state.link)) {
+				getForeignImage.call(this, this.state.link, (blob) => {
+					const reader = new FileReader();
+
+					reader.onabort = () => console.log("file reading was aborted");
+					reader.onerror = () => console.log("An error happened while reading the file");
+					reader.onload = () => {
+						const imageUrl = URL.createObjectURL(blob);
+
+						this.setState({
+							imageName: blob.name,
+							imageSize: blob.size,
+							imageContent: imageUrl,
+						});
+					};
+
+					reader.readAsArrayBuffer(blob);
+				}, (response) => {
+					nm.warning(response.statusText);
+				}, (error) => {
+					nm.error(error.message);
+				});
+			} else {
+				nm.warning("The provided URL does not have the right format");
+			}
+		}
 	}
 
 	onDrop(files) {
@@ -143,25 +176,45 @@ export default class DialogAddImage extends React.Component {
 							</Breadcrumb.Item>
 						</Breadcrumb>
 
-						{this.state.imageContent === null
-							&& <Dropzone
-								accept=".png,.jpg,.jpeg"
-								disabled={false}
-								onDrop={this.onDrop}
-							>
-								{({ getRootProps, getInputProps }) => (
-									<div
-										className={"DialogAddImage-dragdrop"}
-										{...getRootProps()}>
-										<input {...getInputProps()} />
-										<div className="DialogAddImage-dragdrop-textContent">
-											<i className="far fa-image"/>
-											<div>Drag and drop the file here</div>
-											<div>(must be .jpg, .jpeg or .png)</div>
+						{!this.state.imageContent
+							&& <div>
+								<div className={"FormLine"}>
+									<div className={"row"}>
+										<div className={"col-md-12"}>
+											<div className={"FormLine-label"}>
+												Paste the link here
+											</div>
+										</div>
+										<div className={"col-md-12"}>
+											<input
+												value={this.state.link}
+												onChange={(v) => this.changeState("link", v.target.value)}
+											/>
 										</div>
 									</div>
-								)}
-							</Dropzone>
+								</div>
+
+								<div className={"DialogAddImage-or"}>or</div>
+
+								<Dropzone
+									accept=".png,.jpg,.jpeg"
+									disabled={false}
+									onDrop={this.onDrop}
+								>
+									{({ getRootProps, getInputProps }) => (
+										<div
+											className={"DialogAddImage-dragdrop"}
+											{...getRootProps()}>
+											<input {...getInputProps()} />
+											<div className="DialogAddImage-dragdrop-textContent">
+												<i className="far fa-image"/>
+												<div>Drag and drop the file here</div>
+												<div>(must be .jpg, .jpeg or .png)</div>
+											</div>
+										</div>
+									)}
+								</Dropzone>
+							</div>
 						}
 
 						{this.state.imageContent !== null && this.state.croppedImageContent === null
