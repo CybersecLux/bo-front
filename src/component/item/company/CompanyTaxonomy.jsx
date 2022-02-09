@@ -4,6 +4,7 @@ import { NotificationManager as nm } from "react-notifications";
 import Tree from "react-d3-tree";
 import { getRequest, postRequest } from "../../../utils/request.jsx";
 import Loading from "../../box/Loading.jsx";
+import Message from "../../box/Message.jsx";
 
 export default class CompanyTaxonomy extends React.Component {
 	constructor(props) {
@@ -260,6 +261,18 @@ export default class CompanyTaxonomy extends React.Component {
 				</div>
 				<div className="col-md-12">
 					{this.getChildCategories()
+						.filter((c) => c.active_on_companies).length === 0
+						&& <div className={"row row-spaced"}>
+							<div className="col-md-12">
+								<Message
+									height={200}
+									text={"No taxonomy found for the entities"}
+								/>
+							</div>
+						</div>
+					}
+
+					{this.getChildCategories()
 						.filter((c) => c.active_on_companies)
 						.map((c) => (
 							<div className={"row row-spaced"} key={c.name}>
@@ -321,7 +334,8 @@ export default class CompanyTaxonomy extends React.Component {
 									/>
 								</div>
 							</div>
-						))}
+						))
+					}
 				</div>
 			</div>
 		);
