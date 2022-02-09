@@ -20,6 +20,7 @@ export default class DialogSelectImage extends React.Component {
 		this.state = {
 			images: null,
 			page: 1,
+			search: null,
 			order: "desc",
 			showLogoOnly: false,
 			showLoadMoreButton: true,
@@ -28,7 +29,9 @@ export default class DialogSelectImage extends React.Component {
 
 	componentDidUpdate(_, prevState) {
 		if (prevState.showLogoOnly !== this.state.showLogoOnly
-			|| prevState.order !== this.state.order) {
+			|| prevState.order !== this.state.order
+			|| (prevState.search !== this.state.search
+				&& DialogSelectImage.isSearchValid(this.state.search))) {
 			this.refresh();
 		}
 	}
@@ -47,6 +50,7 @@ export default class DialogSelectImage extends React.Component {
 			logo_only: this.state.showLogoOnly,
 			order: this.state.order,
 			page: this.state.page,
+			search: this.state.search,
 		};
 
 		getRequest.call(this, "media/get_images?" + dictToURI(params), (data) => {
@@ -69,6 +73,10 @@ export default class DialogSelectImage extends React.Component {
 		}
 	}
 
+	static isSearchValid(search) {
+		return !search || search.length > 2;
+	}
+
 	changeState(field, value) {
 		this.setState({ [field]: value });
 	}
@@ -84,7 +92,7 @@ export default class DialogSelectImage extends React.Component {
 				closeOnDocumentClick
 			>
 				{(close) => <div className={"row DialogSelectImage-content"}>
-					<div className={"col-md-12"}>
+					<div className="col-md-12">
 						<div className="top-right-buttons">
 							<DialogAddImage
 								trigger={
@@ -107,7 +115,25 @@ export default class DialogSelectImage extends React.Component {
 						<h2>Select image</h2>
 					</div>
 
-					<div className="col-md-12">
+					<div className="col-md-6 row-spaced">
+						<div className={"FormLine"}>
+							<div className={"row"}>
+								<div className={"col-md-4"}>
+									<div className={"FormLine-label"}>
+										Search
+									</div>
+								</div>
+								<div className={"col-md-8"}>
+									<input
+										value={this.state.search}
+										onChange={(v) => this.changeState("search", v.target.value)}
+									/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div className="col-md-6">
 						<div className="DialogSelectImage-buttons">
 							<CheckBox
 								label={"SHOW LOGO ONLY"}
@@ -152,7 +178,7 @@ export default class DialogSelectImage extends React.Component {
 											width={i.width}
 											creationDate={i.creation_date}
 										/>
-										<div>
+										<div className="DialogSelectImage-select-button">
 											<button
 												data-hover="Select"
 												data-active=""

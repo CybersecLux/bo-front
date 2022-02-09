@@ -20,12 +20,12 @@
 }
 
 .Image-image {
-    width: 100%;
+    max-width: 100%;
     text-align: center;
 }
 
 .Image-image img {
-    max-width: 100%;
+    max-width: 50%;
 }
 
 .Image-text {
